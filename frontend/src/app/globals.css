@@ -1,0 +1,264 @@
+/* ══════════════════════════════════════════════════════════════
+   全局样式文件 — 拼豆工坊 (Pingdou Workshop)
+   ──────────────────────────────────────────────────────────────
+   结构概览:
+     1. Tailwind / shadcn 基础导入
+     2. @theme — 设计令牌(Design Tokens)映射
+     3. :root — 浅色模式 CSS 变量
+     4. .dark — 深色模式 CSS 变量
+     5. @layer base — 全局基础样式（滚动条、文字选中等）
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. 基础导入 ────────────────────────────────────────────── */
+@import "tailwindcss";
+/* Tailwind CSS v4 核心 */
+@import "tw-animate-css";
+/* Tailwind 动画扩展（如 animate-spin） */
+@import "shadcn/tailwind.css";
+/* shadcn/ui 组件样式基础 */
+
+/* 暗色模式变体选择器：当祖先元素包含 .dark 类时生效 */
+@custom-variant dark (&:is(.dark *));
+
+/* ── 2. 设计令牌映射 ───────────────────────────────────────── */
+/* 将 CSS 变量映射到 Tailwind 的 theme 系统，使其可在 className 中使用
+   例如: bg-background, text-foreground, border-border 等
+   修改颜色请直接改下方 :root / .dark 中的 CSS 变量值 */
+@theme inline {
+  /* 全局颜色 */
+  --color-background: var(--background);
+  /* 页面背景色 → bg-background */
+  --color-foreground: var(--foreground);
+  /* 全局前景/文字色 → text-foreground */
+
+  /* 字体 */
+  --font-sans: var(--font-jetbrains-mono), "Microsoft JhengHei", sans-serif;
+  /* 🔧 主字体回退链: 英文/数字优先 JetBrains Mono，中文回退微软正黑体，最后回退无衬线 */
+  --font-mono: var(--font-jetbrains-mono), "Microsoft JhengHei", monospace;
+  /* 🔧 等宽字体: 英文数字优先 JetBrains Mono，中文回退微软正黑体 */
+
+  /* 侧边栏专用色（本项目未使用侧边栏，保留供扩展） */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* 图表色板（本项目未使用，保留供扩展） */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* 交互 & 表单 */
+  --color-ring: var(--ring);
+  /* 聚焦环颜色 → ring-ring */
+  --color-input: var(--input);
+  /* 输入框边框色 → border-input */
+  --color-border: var(--border);
+  /* 通用边框色 → border-border */
+
+  /* 语义色 */
+  --color-destructive: var(--destructive);
+  /* 危险/删除操作色 → bg-destructive */
+
+  /* 强调 & 静音 */
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  /* 轻强调背景 → bg-accent（如悬停态） */
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  /* 次要/禁用背景 → bg-muted */
+
+  /* 次要按钮 */
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  /* 次要按钮背景 → bg-secondary */
+
+  /* 主要按钮 */
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  /* 主按钮背景 → bg-primary */
+
+  /* 弹出层 */
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  /* 下拉菜单/弹窗背景 → bg-popover */
+
+  /* 卡片 */
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* 卡片背景 → bg-card */
+
+  /* 圆角梯度 —— 统一圆角大小，改 --radius 即可全局调整
+     --radius 默认 0.75rem (12px)，各级圆角递增 */
+  --radius-sm: calc(var(--radius) - 4px);
+  /* 8px — 小型元素 */
+  --radius-md: calc(var(--radius) - 2px);
+  /* 10px — 中型元素 */
+  --radius-lg: var(--radius);
+  /* 12px — 默认圆角 */
+  --radius-xl: calc(var(--radius) + 4px);
+  /* 16px — 卡片级 */
+  --radius-2xl: calc(var(--radius) + 8px);
+  /* 20px — 大卡片 */
+  --radius-3xl: calc(var(--radius) + 12px);
+  /* 24px — 弹窗级 */
+  --radius-4xl: calc(var(--radius) + 16px);
+  /* 28px — 特大圆角 */
+}
+
+/* ── 3. 浅色模式 CSS 变量 ──────────────────────────────────── */
+/* oklch(亮度 色度 色相) — 使用 oklch 色彩空间，感知均匀，方便微调
+   亮度: 0=纯黑 1=纯白 | 色度: 0=灰色 越大越鲜艳 | 色相: 0-360° 色轮角度
+   ⚡ 快速调色: 只改亮度值即可调整深浅，色度=0 表示纯灰色系 */
+:root {
+  --radius: 0.75rem;
+  /* 🔧 全局圆角基准值 (12px)，改这里影响所有圆角 */
+  --background: oklch(0.975 0 0);
+  /* 页面背景 — 极浅灰白 */
+  --foreground: oklch(0.145 0 0);
+  /* 全局文字 — 近黑色 */
+  --card: oklch(1 0 0);
+  /* 卡片/面板背景 — 纯白 */
+  --card-foreground: oklch(0.145 0 0);
+  /* 卡片文字 — 近黑 */
+  --popover: oklch(1 0 0);
+  /* 弹窗/下拉背景 — 纯白 */
+  --popover-foreground: oklch(0.145 0 0);
+  /* 弹窗文字 — 近黑 */
+  --primary: oklch(0.18 0 0);
+  /* 🔧 主按钮背景 — 深灰黑（生成按钮用） */
+  --primary-foreground: oklch(0.985 0 0);
+  /* 主按钮文字 — 近白 */
+  --secondary: oklch(0.96 0 0);
+  /* 次要按钮背景 — 浅灰 */
+  --secondary-foreground: oklch(0.205 0 0);
+  /* 次要按钮文字 */
+  --muted: oklch(0.96 0 0);
+  /* 禁用/静音背景 */
+  --muted-foreground: oklch(0.5 0 0);
+  /* 禁用/提示文字 — 中灰 */
+  --accent: oklch(0.96 0 0);
+  /* 悬停强调背景 */
+  --accent-foreground: oklch(0.205 0 0);
+  /* 强调文字 */
+  --destructive: oklch(0.577 0.245 27.325);
+  /* 危险红 */
+  --border: oklch(0.93 0 0);
+  /* 🔧 通用边框色 — 改这里调整所有边线深浅 */
+  --input: oklch(0.93 0 0);
+  /* 输入框边框 */
+  --ring: oklch(0.65 0 0);
+  /* 聚焦环 */
+  /* 图表色板 */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  /* 侧边栏 */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.18 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.96 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.93 0 0);
+  --sidebar-ring: oklch(0.65 0 0);
+}
+
+/* ── 4. 深色模式 CSS 变量 ──────────────────────────────────── */
+/* 当 <html> 或祖先元素添加 .dark 类时，以下变量覆盖浅色值
+   目前项目未启用深色模式，如需启用可在 layout.tsx 中切换 */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* ── 5. 全局基础样式 ──────────────────────────────────────── */
+@layer base {
+
+  /* 所有元素统一使用设计令牌中的边框和轮廓色 */
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* body 基础设置：背景色、文字色、字体平滑 */
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    /* macOS/iOS 字体抗锯齿 */
+    -moz-osx-font-smoothing: grayscale;
+    /* Firefox 字体抗锯齿 */
+  }
+
+  /* 🔧 自定义滚动条 — 极简风格，宽度 5px */
+  ::-webkit-scrollbar {
+    width: 5px;
+    /* 滚动条宽度，改大则更明显 */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    /* 轨道透明 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.82 0 0);
+    /* 🔧 滑块颜色 — 浅灰，改小变深 */
+    border-radius: 100px;
+    /* 滑块圆角 */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.7 0 0);
+    /* 滑块悬停变深 */
+  }
+
+  /* 🔧 文字选中高亮色 */
+  ::selection {
+    background: oklch(0.88 0 0);
+    /* 选中背景 — 浅灰 */
+    color: oklch(0.15 0 0);
+    /* 选中文字 — 近黑 */
+  }
+}
+
+/* ── 6. 苹方字体 — 用于一级/二级标题 ─────────────────────── */
+.font-pingfang {
+  font-family: "PingFang SC", "苹方-简", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}

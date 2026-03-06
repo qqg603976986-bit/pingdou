@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# 测试/调试依赖
+pytest>=9.0
+requests>=2.31
+httpx>=0.24

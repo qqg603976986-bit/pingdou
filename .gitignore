@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+Thumbs.db
+.DS_Store
+nul
+
+# 项目运行时产物
+pingdou.log
+.ruff_cache/
+.sisyphus/
+
+# 生成的图纸和统计（保留 pic/ 下的示例）
+# pic/*_bead_pattern.png
+# pic/*_color_stats.*
