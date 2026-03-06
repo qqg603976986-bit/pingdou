@@ -27,6 +27,7 @@ from .color import (
     quantize_with_floyd_steinberg,
 )
 from .palette_reduction import select_palette_subset
+from .color_merge import merge_similar_colors
 from .image_processing import normalize_image, resize_to_grid
 from .render import draw_bead_pattern
 from .render_svg import render_svg
@@ -67,6 +68,7 @@ class PipelineOptions:
     dithering: bool = False
     resize_mode: ResizeMode = "fit"
     max_colors: Optional[int] = None
+    merge_threshold: float = 0.0
     grayscale: bool = False
 
 
@@ -234,6 +236,14 @@ def image_to_pixel_art(
             pixels,
             method=pipeline.quantization_method,
             sub_indices=sub_indices,
+        )
+
+    # ── 后量化颜色合并 ──
+    if pipeline.merge_threshold > 0:
+        idx_matrix = merge_similar_colors(
+            idx_matrix,
+            threshold=pipeline.merge_threshold,
+            method=pipeline.quantization_method,
         )
 
     result_matrix = np.empty((rows, cols), dtype=object)

@@ -29,5 +29,4 @@ pingdou.log
 .sisyphus/
 
 # 生成的图纸和统计（保留 pic/ 下的示例）
-# pic/*_bead_pattern.png
-# pic/*_color_stats.*
+backend/pic/

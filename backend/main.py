@@ -77,6 +77,7 @@ async def generate_pattern(
     dithering: bool = Form(False),
     resize_mode: str = Form("fit"),
     max_colors: int = Form(0),
+    merge_threshold: float = Form(0),
     pixel_style: bool = Form(False),
     grayscale: bool = Form(False),
     # Render options
@@ -113,6 +114,7 @@ async def generate_pattern(
                 dithering=dithering,
                 resize_mode=resize_mode,
                 max_colors=mc,
+                merge_threshold=merge_threshold,
                 grayscale=grayscale,
             ),
             render=RenderOptions(

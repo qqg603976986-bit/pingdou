@@ -39,6 +39,7 @@
 - **Floyd-Steinberg 抖动** — 渐变过渡更自然
 - **单色（灰度）模式** — ITU-R BT.601 标准灰度转换
 - **智能调色板缩减** — K-Means 聚类分析主色调，自动筛选最相关的拼豆色子集
+- **合并相似颜色** — 量化后将 ΔE 接近的颜色合并，减少零星颜色种类，简化采购
 - **像素风格化** — Canny 边缘检测 + HSL 自适应描边，照片呈现像素画风格
 - **多格式导出** — SVG / PNG / JPG / PDF 一键下载
 - **颜色高亮** — 点击统计面板中的颜色，图纸上对应色块高亮显示
@@ -152,19 +153,20 @@ svg_str, color_stats, table_data = generate_svg_in_memory(request)
 
 生成拼豆图纸，返回 SVG 字符串和颜色统计。
 
-| 参数                  | 类型   | 默认值   | 说明                           |
-| --------------------- | ------ | -------- | ------------------------------ |
-| `file`                | File   | **必填** | 图片文件（JPG / PNG / WEBP）   |
-| `size_mode`           | string | `"rows"` | `rows` 按行数 / `cols` 按列数  |
-| `size_value`          | int    | `40`     | 行数或列数                     |
-| `quantization_method` | string | `"lab"`  | 色彩匹配：`lab`（推荐）/ `rgb` |
-| `dithering`           | bool   | `false`  | Floyd-Steinberg 抖动           |
-| `max_colors`          | int    | `0`      | 最大颜色数（0 = 不限）         |
-| `pixel_style`         | bool   | `false`  | 圆形珠子样式                   |
-| `grayscale`           | bool   | `false`  | 单色灰度模式                   |
-| `show_grid`           | bool   | `false`  | 显示网格线                     |
-| `show_labels`         | bool   | `true`   | 显示行列标签                   |
-| `show_color_codes`    | bool   | `true`   | 格子内显示色号                 |
+| 参数                  | 类型   | 默认值   | 说明                               |
+| --------------------- | ------ | -------- | ---------------------------------- |
+| `file`                | File   | **必填** | 图片文件（JPG / PNG / WEBP）       |
+| `size_mode`           | string | `"rows"` | `rows` 按行数 / `cols` 按列数      |
+| `size_value`          | int    | `40`     | 行数或列数                         |
+| `quantization_method` | string | `"lab"`  | 色彩匹配：`lab`（推荐）/ `rgb`     |
+| `dithering`           | bool   | `false`  | Floyd-Steinberg 抖动               |
+| `max_colors`          | int    | `0`      | 最大颜色数（0 = 不限）             |
+| `merge_threshold`     | float  | `0`      | 合并相似色阈值（0 = 不合并，1~30） |
+| `pixel_style`         | bool   | `false`  | 圆形珠子样式                       |
+| `grayscale`           | bool   | `false`  | 单色灰度模式                       |
+| `show_grid`           | bool   | `false`  | 显示网格线                         |
+| `show_labels`         | bool   | `true`   | 显示行列标签                       |
+| `show_color_codes`    | bool   | `true`   | 格子内显示色号                     |
 
 **响应：**
 
@@ -202,6 +204,7 @@ popbeads/
 │       ├── palette.py             # 221 色 Mard 官方色卡定义
 │       ├── color.py               # Lab/RGB 最近色匹配 + Floyd-Steinberg 抖动
 │       ├── palette_reduction.py   # K-Means 聚类 → 调色板子集筛选
+│       ├── color_merge.py         # 后量化颜色合并（ΔE 阈值 + Union-Find）
 │       ├── image_processing.py    # 归一化、网格缩放、邻域平滑
 │       ├── render_svg.py          # SVG 矢量图纸渲染
 │       ├── render.py              # PNG 位图图纸渲染
@@ -230,7 +233,7 @@ popbeads/
 ### 处理管线
 
 ```
-原图 → 归一化(1500px) → 缩放到网格尺寸 → [灰度转换] → [调色板缩减] → Lab/RGB 量化 → [抖动] → SVG 渲染
+原图 → 归一化(1500px) → 缩放到网格尺寸 → [灰度转换] → [调色板缩减] → Lab/RGB 量化 → [抖动] → [合并相似色] → SVG 渲染
 ```
 
 ## 🎨 内置色卡
@@ -347,6 +350,13 @@ cd frontend && npm install
 <summary><strong>智能调色板缩减是什么？</strong></summary>
 
 设置最大颜色数后，系统用 K-Means 聚类分析图片主色调，从 221 色中筛选最相关的 N 种拼豆色。适合采购预算有限的场景。
+
+</details>
+
+<details>
+<summary><strong>「合并相似色」和「配色数量」有什么区别？</strong></summary>
+
+「配色数量」在量化**前**限定可用调色板范围（如只用 36 色套装）；「合并相似色」在量化**后**将结果中色差小于阈值的颜色合并为一种，减少零星颜色。两者可叠加使用。
 
 </details>
 
