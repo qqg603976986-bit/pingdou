@@ -29,4 +29,4 @@ pingdou.log
 .sisyphus/
 
 # 生成的图纸和统计（保留 pic/ 下的示例）
-./backend/pic/
+backend/pic/
