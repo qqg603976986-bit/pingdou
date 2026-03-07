@@ -25,13 +25,20 @@ from src.api import (
 app = FastAPI(title="Pingdou API", description="API for Pingdou Pixel Art Generator")
 
 # Configure CORS for Next.js frontend
+_cors_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://10.0.0.39:3000",
+]
+# Allow adding production origins via environment variable, e.g.
+#   CORS_ORIGINS=https://your-app.vercel.app,https://custom-domain.com
+_extra = os.environ.get("CORS_ORIGINS", "")
+if _extra:
+    _cors_origins.extend([o.strip() for o in _extra.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://10.0.0.39:3000",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
