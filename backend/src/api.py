@@ -83,7 +83,7 @@ class RenderOptions:
     round_beads: bool = False
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True) 
 class ConvertRequest:
     """对外统一请求对象（文件版/内存版共用）。"""
 
