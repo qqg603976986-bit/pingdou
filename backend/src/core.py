@@ -19,11 +19,14 @@ if not logger.handlers:
         "%(asctime)s | %(levelname)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    _fh = logging.FileHandler(
-        os.path.join(_LOG_DIR, "pingdou.log"), encoding="utf-8",
-    )
-    _fh.setFormatter(_fmt)
-    logger.addHandler(_fh)
+    # 文件日志 — 只读文件系统（如 Vercel）下自动跳过
+    _log_path = os.path.join(_LOG_DIR, "pingdou.log")
+    try:
+        _fh = logging.FileHandler(_log_path, encoding="utf-8")
+        _fh.setFormatter(_fmt)
+        logger.addHandler(_fh)
+    except OSError:
+        pass
     _sh = logging.StreamHandler()
     _sh.setFormatter(_fmt)
     logger.addHandler(_sh)
